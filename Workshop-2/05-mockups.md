@@ -2,52 +2,57 @@
 
 The mockups cover only the **main screens** of the Public Module. They were built as a clickable high-fidelity prototype in **v0 by Vercel**. The prototype started from a v0 template and used the reference image sent by the pilot organization (DBS Complejo Deportivo) as the visual guide. The exact prompt is in [v0-prompt.md](v0-prompt.md).
 
-Public screens are designed **mobile-first** (390 px), because most visitors follow the tournament from a phone at the venue (RNF-07). The organizer and sponsor screens are desktop back-office views (1440 px). All the data shown is fictional; no real player data is used (BR-06).
+The prototype was requested mobile-first and responsive (RNF-07); the captures below were taken at desktop width. All the data shown is fictional (teams, players, scores and metrics); no real player data is used (BR-06).
 
-| # | Screen | Purpose | Stories covered |
+| # | Screen | Purpose | Requirements covered |
 |---|---|---|---|
-| 0 | Reference sent by the organization | Visual identity the public site must follow (colors, header, tiles, cards). | — |
-| 1 | Home (desktop) | Entry point. Shows the brand, quick access to schedule, results, standings, clubs, venues and news, the next matches, a standings preview, the latest news and the sponsors. | HU-01, HU-03, HU-09, HU-20 |
-| 2 | Matchday schedule and results (mobile) | Shows each match of the matchday by category and group: time, field, teams, score and scorers, including the "Provisional" and "To be scheduled" states. Offers to install the app. | HU-01, HU-02, HU-06 |
-| 3 | Standings (mobile) | Group table with tie-breaks, provisional flag and withdrawn teams, plus the top scorers and best defense tabs. | HU-03, HU-04 |
-| 4 | Team profile (mobile) | One page per team: crest, club, category, group, position, upcoming matches, results and the "Follow" button. | HU-07, HU-08, HU-13 |
-| 5 | My teams (mobile, signed-in fan) | The fan's home page: next match and last result of each followed team, notifications and push settings. | HU-12, HU-13, HU-14 |
-| 6 | Book photo/video (mobile) | Lets a fan book a photo or video package for a scheduled match and pay through the payment gateway. | HU-16, HU-17 |
-| 7 | Organizer: public site (desktop) | Back-office where the organizer sets the brand (logo, colors, domain), the published tournaments and the visible sections. | HU-19, HU-20, HU-24 |
-| 8 | Sponsor dashboard (desktop) | Impressions, clicks and CTR of the sponsor's own placements by period, with a downloadable report. | HU-33, HU-34 |
+| 0 | Reference sent by the organization | Visual identity the public site must follow: dark header, green actions, coloured quick-access tiles, rounded cards. It also defines the home page layout. | — |
+| 1 | Schedule and results | Lists the matches of the tournament by category and group, with date, time, field and teams. A match without an approved schedule shows **"To be scheduled"** and no time or field (BR-02). The *Results* toggle shows approved scores. | HU-01, HU-02 |
+| 2 | Standings | Group tables with P, W, D, L, GF, GA, GD and points. A yellow dot marks teams with **provisional** results (BR-03) and a withdrawn team goes to the bottom, crossed out (BR-04). Tabs give the top scorers and best defense. | HU-03, HU-04 |
+| 3 | Team profile | One page per team: crest, category, group, position, points, record, upcoming matches and results with scorers (name and team only, BR-06). The **"Follow team"** button starts the fan flow. | HU-07, HU-13 |
+| 4 | Club profile | All the teams of a club in the tournament, one per category, with their group, position and points. | HU-08 |
+| 5 | News | News published by the organization, newest first, filtered by topic. | HU-09 |
+| 6 | Venues | The organization's venue with address, number of fields and amenities, so families know where each match is played. | RF-01 (field of each match) |
+| 7 | My teams | The fan's home. Without a session it asks the visitor to sign in, because following teams and receiving notifications require a fan account (BR-08). | HU-12, HU-13, HU-14 |
+| 8 | Book photo or video | The fan chooses a package (photo pack or video highlights, prices in COP), picks a scheduled match (BR-12) and requests the booking, which is then paid through the payment gateway (BR-10). | HU-16 |
+| 9 | Sponsorship dashboard | Impressions, clicks and CTR by placement (website, app, match graphics) over the last 60 days, with daily trend. The capture shows the organizer's aggregated view; a sponsor account sees only its own placements (BR-14). | HU-26, HU-33 |
 
 ## 5.0 Reference sent by the organization
 
 ![Reference image sent by DBS Complejo Deportivo](mockups/00-reference-dbs.jpg)
 
-## 5.1 Home
+## 5.1 Schedule and results
 
-![Home](mockups/01-home-desktop.png)
+![Schedule and results](mockups/01-schedule.png)
 
-## 5.2 Matchday schedule and results
+## 5.2 Standings
 
-![Matchday schedule and results](mockups/02-schedule-mobile.png)
+![Standings](mockups/02-standings.png)
 
-## 5.3 Standings
+## 5.3 Team profile
 
-![Standings](mockups/03-standings-mobile.png)
+![Team profile](mockups/03-team-profile.png)
 
-## 5.4 Team profile
+## 5.4 Club profile
 
-![Team profile](mockups/04-team-profile-mobile.png)
+![Club profile](mockups/04-club-profile.png)
 
-## 5.5 My teams
+## 5.5 News
 
-![My teams](mockups/05-my-teams-mobile.png)
+![News](mockups/05-news.png)
 
-## 5.6 Book photo/video
+## 5.6 Venues
 
-![Book photo or video](mockups/06-book-media-mobile.png)
+![Venues](mockups/06-venues.png)
 
-## 5.7 Organizer: public site
+## 5.7 My teams
 
-![Organizer public site settings](mockups/07-admin-public-site-desktop.png)
+![My teams](mockups/07-my-teams.png)
 
-## 5.8 Sponsor dashboard
+## 5.8 Book photo or video
 
-![Sponsor dashboard](mockups/08-sponsor-dashboard-desktop.png)
+![Book photo or video](mockups/08-book-media.png)
+
+## 5.9 Sponsorship dashboard
+
+![Sponsorship dashboard](mockups/09-sponsor-dashboard.png)
