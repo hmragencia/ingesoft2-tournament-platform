@@ -1,0 +1,354 @@
+{
+  "id": "P2",
+  "name": "Book and deliver a photo or video package",
+  "pools": [
+    {
+      "id": "gw",
+      "name": "Payment gateway (ePayco, PCI DSS)",
+      "collapsed": true
+    },
+    {
+      "id": "fan",
+      "name": "Fan",
+      "lanes": [
+        {
+          "id": "fanl",
+          "name": "Registered fan",
+          "height": 130
+        }
+      ]
+    },
+    {
+      "id": "pm",
+      "name": "Public Module (this project)",
+      "lanes": [
+        {
+          "id": "pmsys",
+          "name": "Public site (automatic)",
+          "height": 240
+        }
+      ]
+    },
+    {
+      "id": "org",
+      "name": "Organization",
+      "lanes": [
+        {
+          "id": "orgl",
+          "name": "Organizer",
+          "height": 120
+        },
+        {
+          "id": "photo",
+          "name": "Photographer / videographer",
+          "height": 120
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "fstart",
+      "type": "startEvent",
+      "name": "Wants photos or video of a match",
+      "lane": "fanl",
+      "col": 0
+    },
+    {
+      "id": "choose",
+      "type": "userTask",
+      "name": "Choose package and scheduled match",
+      "lane": "fanl",
+      "col": 1
+    },
+    {
+      "id": "request",
+      "type": "userTask",
+      "name": "Request booking",
+      "lane": "fanl",
+      "col": 2
+    },
+    {
+      "id": "pay",
+      "type": "userTask",
+      "name": "Pay on the gateway page",
+      "lane": "fanl",
+      "col": 5
+    },
+    {
+      "id": "linkin",
+      "type": "catchEvent",
+      "event": "message",
+      "name": "Delivery link received",
+      "lane": "fanl",
+      "col": 11,
+      "labelPos": "above"
+    },
+    {
+      "id": "open",
+      "type": "userTask",
+      "name": "Open photos or video",
+      "lane": "fanl",
+      "col": 12
+    },
+    {
+      "id": "fend",
+      "type": "endEvent",
+      "name": "Material received",
+      "lane": "fanl",
+      "col": 13
+    },
+    {
+      "id": "pstart",
+      "type": "startEvent",
+      "event": "message",
+      "name": "Booking requested",
+      "lane": "pmsys",
+      "col": 2,
+      "dy": 25
+    },
+    {
+      "id": "check",
+      "type": "gateway",
+      "name": "Scheduled match, before cut-off?",
+      "lane": "pmsys",
+      "col": 3,
+      "dy": 25
+    },
+    {
+      "id": "create",
+      "type": "serviceTask",
+      "name": "Create pending booking and checkout",
+      "lane": "pmsys",
+      "col": 4,
+      "dy": 25
+    },
+    {
+      "id": "refused",
+      "type": "endEvent",
+      "name": "Request refused",
+      "lane": "pmsys",
+      "col": 5,
+      "dy": -70
+    },
+    {
+      "id": "webhook",
+      "type": "catchEvent",
+      "event": "message",
+      "name": "Payment webhook received",
+      "lane": "pmsys",
+      "col": 6,
+      "dy": 25
+    },
+    {
+      "id": "paid",
+      "type": "gateway",
+      "name": "Payment approved?",
+      "lane": "pmsys",
+      "col": 7,
+      "dy": 25
+    },
+    {
+      "id": "confirmb",
+      "type": "serviceTask",
+      "name": "Confirm booking (once per gateway reference)",
+      "lane": "pmsys",
+      "col": 8,
+      "dy": 25
+    },
+    {
+      "id": "cancel",
+      "type": "serviceTask",
+      "name": "Cancel booking",
+      "lane": "pmsys",
+      "col": 8,
+      "dy": -70
+    },
+    {
+      "id": "cancelled",
+      "type": "endEvent",
+      "name": "Booking cancelled",
+      "lane": "pmsys",
+      "col": 9,
+      "dy": -70
+    },
+    {
+      "id": "linkup",
+      "type": "catchEvent",
+      "event": "message",
+      "name": "Delivery link uploaded",
+      "lane": "pmsys",
+      "col": 10,
+      "dy": 25,
+      "labelPos": "above"
+    },
+    {
+      "id": "notifyc",
+      "type": "sendTask",
+      "name": "Notify customer (e-mail and push)",
+      "lane": "pmsys",
+      "col": 11,
+      "dy": 25
+    },
+    {
+      "id": "pend",
+      "type": "endEvent",
+      "name": "Booking delivered",
+      "lane": "pmsys",
+      "col": 12,
+      "dy": 25
+    },
+    {
+      "id": "ostart",
+      "type": "startEvent",
+      "event": "message",
+      "name": "Paid booking received",
+      "lane": "orgl",
+      "col": 8
+    },
+    {
+      "id": "assign",
+      "type": "userTask",
+      "name": "Assign photographer to the match",
+      "lane": "orgl",
+      "col": 9
+    },
+    {
+      "id": "cover",
+      "type": "userTask",
+      "name": "Cover the match and upload delivery link",
+      "lane": "photo",
+      "col": 10
+    },
+    {
+      "id": "phend",
+      "type": "endEvent",
+      "name": "Material delivered",
+      "lane": "photo",
+      "col": 11
+    }
+  ],
+  "flows": [
+    [
+      "fstart",
+      "choose"
+    ],
+    [
+      "choose",
+      "request"
+    ],
+    [
+      "request",
+      "pay"
+    ],
+    [
+      "pay",
+      "linkin"
+    ],
+    [
+      "linkin",
+      "open"
+    ],
+    [
+      "open",
+      "fend"
+    ],
+    [
+      "pstart",
+      "check"
+    ],
+    [
+      "check",
+      "create",
+      "Yes"
+    ],
+    [
+      "check",
+      "refused",
+      "No"
+    ],
+    [
+      "create",
+      "webhook"
+    ],
+    [
+      "webhook",
+      "paid"
+    ],
+    [
+      "paid",
+      "confirmb",
+      "Yes"
+    ],
+    [
+      "paid",
+      "cancel",
+      "No"
+    ],
+    [
+      "cancel",
+      "cancelled"
+    ],
+    [
+      "confirmb",
+      "linkup"
+    ],
+    [
+      "linkup",
+      "notifyc"
+    ],
+    [
+      "notifyc",
+      "pend"
+    ],
+    [
+      "ostart",
+      "assign"
+    ],
+    [
+      "assign",
+      "cover"
+    ],
+    [
+      "cover",
+      "phend"
+    ]
+  ],
+  "messages": [
+    {
+      "from": "request",
+      "to": "pstart",
+      "name": "Booking request"
+    },
+    {
+      "from": "create",
+      "to": "pay",
+      "name": "Checkout link"
+    },
+    {
+      "from": "pay",
+      "to": "pool:gw",
+      "name": "Card or PSE payment"
+    },
+    {
+      "from": "pool:gw",
+      "to": "webhook",
+      "name": "Signed webhook"
+    },
+    {
+      "from": "confirmb",
+      "to": "ostart",
+      "name": "Booking paid"
+    },
+    {
+      "from": "cover",
+      "to": "linkup",
+      "name": "Delivery link"
+    },
+    {
+      "from": "notifyc",
+      "to": "linkin",
+      "name": "Delivery link"
+    }
+  ]
+}

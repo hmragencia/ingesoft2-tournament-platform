@@ -12,7 +12,7 @@ The project extends an existing tournament-management platform for youth footbal
 |---|---|---|
 | Project proposal (approved) and Annex A, functionality breakdown | [Proposal/](Proposal/) | Spanish |
 | Workshop 1: requirements, user stories and story map | [Workshop-1/](Workshop-1/README.md) | Spanish |
-| Workshop 2: design artifacts and system modeling | [Workshop-2/](Workshop-2/README.md) | English |
+| Workshop 2: design artifacts and system modeling (part 1: domain, CRC, classes, database, mockups; part 2: BPMN processes, architecture) | [Workshop-2/](Workshop-2/README.md) | English |
 
 ## Other course work
 
@@ -24,4 +24,4 @@ The project extends an existing tournament-management platform for youth footbal
 
 ## Tools
 
-`python3 tools/build_workshop_pdf.py Workshop-2` compiles the numbered sections of a workshop into its single PDF. It needs Google Chrome; Markdown and Mermaid are rendered in the browser.
+`python3 tools/build_workshop_pdf.py Workshop-2` compiles the numbered sections of a workshop into a single PDF; `--sections` and `--out` select a subset (part 2 of Workshop 2). `python3 tools/build_bpmn.py Workshop-2/bpmn` generates the BPMN 2.0 files and their SVG images. Both need Google Chrome: Markdown, Mermaid and BPMN are rendered in the browser.

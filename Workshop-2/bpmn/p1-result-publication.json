@@ -1,0 +1,303 @@
+{
+  "id": "P1",
+  "name": "Publish an approved result and notify followers",
+  "pools": [
+    {
+      "id": "mgmt",
+      "name": "Tournament-management platform (existing)",
+      "lanes": [
+        {
+          "id": "home",
+          "name": "Home team delegate",
+          "height": 120
+        },
+        {
+          "id": "away",
+          "name": "Away team delegate",
+          "height": 120
+        },
+        {
+          "id": "plat",
+          "name": "Platform (automatic)",
+          "height": 120
+        },
+        {
+          "id": "org",
+          "name": "Organizer",
+          "height": 210
+        }
+      ]
+    },
+    {
+      "id": "pm",
+      "name": "Public Module (this project)",
+      "lanes": [
+        {
+          "id": "pmsys",
+          "name": "Public site (automatic)",
+          "height": 230
+        }
+      ]
+    },
+    {
+      "id": "push",
+      "name": "Push service (FCM / APNs / Mozilla)",
+      "collapsed": true
+    },
+    {
+      "id": "fan",
+      "name": "Fans following either team",
+      "collapsed": true
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "type": "startEvent",
+      "name": "Match played",
+      "lane": "home",
+      "col": 0
+    },
+    {
+      "id": "report",
+      "type": "userTask",
+      "name": "Report score and scorers",
+      "lane": "home",
+      "col": 1
+    },
+    {
+      "id": "confirm",
+      "type": "userTask",
+      "name": "Confirm reported result",
+      "lane": "away",
+      "col": 2
+    },
+    {
+      "id": "timer",
+      "type": "boundaryEvent",
+      "event": "timer",
+      "name": "24 h without answer: auto-accept",
+      "attachedTo": "confirm",
+      "labelPos": "left"
+    },
+    {
+      "id": "review",
+      "type": "serviceTask",
+      "name": "Mark result as under review",
+      "lane": "plat",
+      "col": 3
+    },
+    {
+      "id": "verify",
+      "type": "userTask",
+      "name": "Verify against the paper match sheet",
+      "lane": "org",
+      "col": 4
+    },
+    {
+      "id": "matches",
+      "type": "gateway",
+      "name": "Sheet matches?",
+      "lane": "org",
+      "col": 5,
+      "labelPos": "above"
+    },
+    {
+      "id": "correct",
+      "type": "userTask",
+      "name": "Correct score or scorers",
+      "lane": "org",
+      "col": 6,
+      "dy": 57
+    },
+    {
+      "id": "approve",
+      "type": "userTask",
+      "name": "Approve result",
+      "lane": "org",
+      "col": 7
+    },
+    {
+      "id": "final",
+      "type": "endEvent",
+      "name": "Result final",
+      "lane": "org",
+      "col": 8
+    },
+    {
+      "id": "changed",
+      "type": "startEvent",
+      "event": "message",
+      "name": "Result status changed",
+      "lane": "pmsys",
+      "col": 3
+    },
+    {
+      "id": "status",
+      "type": "gateway",
+      "name": "New status?",
+      "lane": "pmsys",
+      "col": 4,
+      "labelPos": "aboveleft"
+    },
+    {
+      "id": "prov",
+      "type": "serviceTask",
+      "name": "Show score as Provisional",
+      "lane": "pmsys",
+      "col": 5,
+      "dy": -57
+    },
+    {
+      "id": "showfinal",
+      "type": "serviceTask",
+      "name": "Show score as Final",
+      "lane": "pmsys",
+      "col": 5,
+      "dy": 57
+    },
+    {
+      "id": "refresh",
+      "type": "serviceTask",
+      "name": "Recompute standings and refresh cached pages (≤ 1 min)",
+      "lane": "pmsys",
+      "col": 6
+    },
+    {
+      "id": "approved",
+      "type": "gateway",
+      "name": "Approved?",
+      "lane": "pmsys",
+      "col": 7
+    },
+    {
+      "id": "notify",
+      "type": "sendTask",
+      "name": "Notify followers of both teams",
+      "lane": "pmsys",
+      "col": 8
+    },
+    {
+      "id": "waiting",
+      "type": "endEvent",
+      "name": "Waiting for approval",
+      "lane": "pmsys",
+      "col": 9,
+      "dy": -85
+    },
+    {
+      "id": "done",
+      "type": "endEvent",
+      "name": "Followers notified",
+      "lane": "pmsys",
+      "col": 9
+    }
+  ],
+  "flows": [
+    [
+      "start",
+      "report"
+    ],
+    [
+      "report",
+      "confirm"
+    ],
+    [
+      "confirm",
+      "review"
+    ],
+    [
+      "timer",
+      "review"
+    ],
+    [
+      "review",
+      "verify"
+    ],
+    [
+      "verify",
+      "matches"
+    ],
+    [
+      "matches",
+      "approve",
+      "Yes"
+    ],
+    [
+      "matches",
+      "correct",
+      "No"
+    ],
+    [
+      "correct",
+      "approve"
+    ],
+    [
+      "approve",
+      "final"
+    ],
+    [
+      "changed",
+      "status"
+    ],
+    [
+      "status",
+      "prov",
+      "Under review"
+    ],
+    [
+      "status",
+      "showfinal",
+      "Approved"
+    ],
+    [
+      "prov",
+      "refresh"
+    ],
+    [
+      "showfinal",
+      "refresh"
+    ],
+    [
+      "refresh",
+      "approved"
+    ],
+    [
+      "approved",
+      "waiting",
+      "No"
+    ],
+    [
+      "approved",
+      "notify",
+      "Yes"
+    ],
+    [
+      "notify",
+      "done"
+    ]
+  ],
+  "messages": [
+    {
+      "from": "review",
+      "to": "changed",
+      "name": "Under review"
+    },
+    {
+      "from": "approve",
+      "to": "changed",
+      "name": "Approved"
+    },
+    {
+      "from": "notify",
+      "to": "pool:push",
+      "name": "Web Push (VAPID)"
+    },
+    {
+      "from": "pool:push",
+      "to": "pool:fan",
+      "name": "Final score notification",
+      "col": 8
+    }
+  ]
+}

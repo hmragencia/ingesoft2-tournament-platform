@@ -4,8 +4,11 @@
 Markdown and Mermaid diagrams are rendered in headless Chrome (marked + mermaid
 from jsDelivr), then printed to PDF.
 
-Usage: python3 tools/build_workshop_pdf.py Workshop-2
+Usage:
+  python3 tools/build_workshop_pdf.py Workshop-2                      # every section -> Workshop-2.pdf
+  python3 tools/build_workshop_pdf.py Workshop-2 --sections 06 07 08 --out Workshop-2-part-2.pdf
 """
+import argparse
 import html
 import json
 import pathlib
@@ -19,6 +22,11 @@ COVER = {
         "title": "Workshop No. 2 — Design Artifacts and System Modeling",
         "subtitle": "Public Module of the youth football tournament platform: public website, widgets and PWA",
         "date": "October 15, 2026",
+    },
+    "Workshop-2-part-2": {
+        "title": "Workshop No. 2 — Design Artifacts and System Modeling",
+        "subtitle": "Part 2: business process models and architecture diagram",
+        "date": "October 30, 2026",
     },
 }
 
@@ -51,6 +59,10 @@ TEMPLATE = """<!doctype html>
   .cover h1 {{ border: 0; break-before: auto; font-size: 24pt; }}
   .cover p {{ margin: 4px 0; }}
   .toc {{ break-before: page; }}
+  @page landscape {{ size: Letter landscape; margin: 12mm; }}
+  .landscape {{ page: landscape; break-before: page; }}
+  .landscape img {{ max-height: 182mm; border: 0; }}
+  .landscape .mermaid svg {{ max-height: 175mm; }}
 </style></head>
 <body>
 <section class="cover">
@@ -86,9 +98,18 @@ TEMPLATE = """<!doctype html>
 
 
 def main() -> None:
-    folder = pathlib.Path(sys.argv[1]).resolve()
-    meta = COVER[folder.name]
-    sections = [p.read_text(encoding="utf-8") for p in sorted(folder.glob("[0-9][0-9]-*.md"))]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("folder")
+    parser.add_argument("--sections", nargs="*", help="two-digit section prefixes to include (default: all)")
+    parser.add_argument("--out", help="PDF file name inside the folder (default: <folder>.pdf)")
+    args = parser.parse_args(sys.argv[1:])
+    folder = pathlib.Path(args.folder).resolve()
+    out_name = args.out or f"{folder.name}.pdf"
+    meta = COVER[pathlib.Path(out_name).stem]
+    files = sorted(folder.glob("[0-9][0-9]-*.md"))
+    if args.sections:
+        files = [f for f in files if f.name[:2] in args.sections]
+    sections = [p.read_text(encoding="utf-8") for p in files]
     page = TEMPLATE.format(
         title=html.escape(meta["title"]),
         subtitle=html.escape(meta["subtitle"]),
@@ -98,7 +119,7 @@ def main() -> None:
     )
     html_path = folder / ".build.html"
     html_path.write_text(page, encoding="utf-8")
-    pdf_path = folder / f"{folder.name}.pdf"
+    pdf_path = folder / out_name
     subprocess.run(
         [
             CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",

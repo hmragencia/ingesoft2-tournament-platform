@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_P1" targetNamespace="https://github.com/hmragencia/ingesoft2-tournament-platform">
+  <bpmn:collaboration id="Collaboration_P1">
+    <bpmn:participant id="Pool_P1_mgmt" name="Tournament-management platform (existing)" processRef="Process_P1_mgmt"/>
+    <bpmn:participant id="Pool_P1_pm" name="Public Module (this project)" processRef="Process_P1_pm"/>
+    <bpmn:participant id="Pool_P1_push" name="Push service (FCM / APNs / Mozilla)"/>
+    <bpmn:participant id="Pool_P1_fan" name="Fans following either team"/>
+    <bpmn:messageFlow id="Msg_P1_0" name="Under review" sourceRef="P1_review" targetRef="P1_changed"/>
+    <bpmn:messageFlow id="Msg_P1_1" name="Approved" sourceRef="P1_approve" targetRef="P1_changed"/>
+    <bpmn:messageFlow id="Msg_P1_2" name="Web Push (VAPID)" sourceRef="P1_notify" targetRef="Pool_P1_push"/>
+    <bpmn:messageFlow id="Msg_P1_3" name="Final score notification" sourceRef="Pool_P1_push" targetRef="Pool_P1_fan"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_P1_mgmt" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_P1_mgmt">
+      <bpmn:lane id="Lane_P1_home" name="Home team delegate">
+        <bpmn:flowNodeRef>P1_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_report</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P1_away" name="Away team delegate">
+        <bpmn:flowNodeRef>P1_confirm</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_timer</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P1_plat" name="Platform (automatic)">
+        <bpmn:flowNodeRef>P1_review</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_P1_org" name="Organizer">
+        <bpmn:flowNodeRef>P1_verify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_matches</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_correct</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_approve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_final</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="P1_start" name="Match played"></bpmn:startEvent>
+    <bpmn:userTask id="P1_report" name="Report score and scorers"></bpmn:userTask>
+    <bpmn:userTask id="P1_confirm" name="Confirm reported result"></bpmn:userTask>
+    <bpmn:boundaryEvent id="P1_timer" name="24 h without answer: auto-accept" attachedToRef="P1_confirm"><bpmn:timerEventDefinition/></bpmn:boundaryEvent>
+    <bpmn:serviceTask id="P1_review" name="Mark result as under review"></bpmn:serviceTask>
+    <bpmn:userTask id="P1_verify" name="Verify against the paper match sheet"></bpmn:userTask>
+    <bpmn:exclusiveGateway id="P1_matches" name="Sheet matches?"></bpmn:exclusiveGateway>
+    <bpmn:userTask id="P1_correct" name="Correct score or scorers"></bpmn:userTask>
+    <bpmn:userTask id="P1_approve" name="Approve result"></bpmn:userTask>
+    <bpmn:endEvent id="P1_final" name="Result final"></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_P1_0" sourceRef="P1_start" targetRef="P1_report"/>
+    <bpmn:sequenceFlow id="Flow_P1_1" sourceRef="P1_report" targetRef="P1_confirm"/>
+    <bpmn:sequenceFlow id="Flow_P1_2" sourceRef="P1_confirm" targetRef="P1_review"/>
+    <bpmn:sequenceFlow id="Flow_P1_3" sourceRef="P1_timer" targetRef="P1_review"/>
+    <bpmn:sequenceFlow id="Flow_P1_4" sourceRef="P1_review" targetRef="P1_verify"/>
+    <bpmn:sequenceFlow id="Flow_P1_5" sourceRef="P1_verify" targetRef="P1_matches"/>
+    <bpmn:sequenceFlow id="Flow_P1_6" name="Yes" sourceRef="P1_matches" targetRef="P1_approve"/>
+    <bpmn:sequenceFlow id="Flow_P1_7" name="No" sourceRef="P1_matches" targetRef="P1_correct"/>
+    <bpmn:sequenceFlow id="Flow_P1_8" sourceRef="P1_correct" targetRef="P1_approve"/>
+    <bpmn:sequenceFlow id="Flow_P1_9" sourceRef="P1_approve" targetRef="P1_final"/>
+  </bpmn:process>
+  <bpmn:process id="Process_P1_pm" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_P1_pm">
+      <bpmn:lane id="Lane_P1_pmsys" name="Public site (automatic)">
+        <bpmn:flowNodeRef>P1_changed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_status</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_prov</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_showfinal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_refresh</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_approved</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_notify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_waiting</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>P1_done</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="P1_changed" name="Result status changed"><bpmn:messageEventDefinition/></bpmn:startEvent>
+    <bpmn:exclusiveGateway id="P1_status" name="New status?"></bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="P1_prov" name="Show score as Provisional"></bpmn:serviceTask>
+    <bpmn:serviceTask id="P1_showfinal" name="Show score as Final"></bpmn:serviceTask>
+    <bpmn:serviceTask id="P1_refresh" name="Recompute standings and refresh cached pages (≤ 1 min)"></bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="P1_approved" name="Approved?"></bpmn:exclusiveGateway>
+    <bpmn:sendTask id="P1_notify" name="Notify followers of both teams"></bpmn:sendTask>
+    <bpmn:endEvent id="P1_waiting" name="Waiting for approval"></bpmn:endEvent>
+    <bpmn:endEvent id="P1_done" name="Followers notified"></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_P1_10" sourceRef="P1_changed" targetRef="P1_status"/>
+    <bpmn:sequenceFlow id="Flow_P1_11" name="Under review" sourceRef="P1_status" targetRef="P1_prov"/>
+    <bpmn:sequenceFlow id="Flow_P1_12" name="Approved" sourceRef="P1_status" targetRef="P1_showfinal"/>
+    <bpmn:sequenceFlow id="Flow_P1_13" sourceRef="P1_prov" targetRef="P1_refresh"/>
+    <bpmn:sequenceFlow id="Flow_P1_14" sourceRef="P1_showfinal" targetRef="P1_refresh"/>
+    <bpmn:sequenceFlow id="Flow_P1_15" sourceRef="P1_refresh" targetRef="P1_approved"/>
+    <bpmn:sequenceFlow id="Flow_P1_16" name="No" sourceRef="P1_approved" targetRef="P1_waiting"/>
+    <bpmn:sequenceFlow id="Flow_P1_17" name="Yes" sourceRef="P1_approved" targetRef="P1_notify"/>
+    <bpmn:sequenceFlow id="Flow_P1_18" sourceRef="P1_notify" targetRef="P1_done"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_P1">
+    <bpmndi:BPMNPlane id="Plane_P1" bpmnElement="Collaboration_P1">
+      <bpmndi:BPMNShape id="Pool_P1_mgmt_di" bpmnElement="Pool_P1_mgmt" isHorizontal="true"><dc:Bounds x="0" y="0" width="1540" height="570"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_home_di" bpmnElement="Lane_P1_home" isHorizontal="true"><dc:Bounds x="30" y="0" width="1510" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_away_di" bpmnElement="Lane_P1_away" isHorizontal="true"><dc:Bounds x="30" y="120" width="1510" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_plat_di" bpmnElement="Lane_P1_plat" isHorizontal="true"><dc:Bounds x="30" y="240" width="1510" height="120"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_org_di" bpmnElement="Lane_P1_org" isHorizontal="true"><dc:Bounds x="30" y="360" width="1510" height="210"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Pool_P1_pm_di" bpmnElement="Pool_P1_pm" isHorizontal="true"><dc:Bounds x="0" y="610" width="1540" height="230"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_P1_pmsys_di" bpmnElement="Lane_P1_pmsys" isHorizontal="true"><dc:Bounds x="30" y="610" width="1510" height="230"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Pool_P1_push_di" bpmnElement="Pool_P1_push" isHorizontal="true"><dc:Bounds x="0" y="880" width="1540" height="60"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Pool_P1_fan_di" bpmnElement="Pool_P1_fan" isHorizontal="true"><dc:Bounds x="0" y="980" width="1540" height="60"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_start_di" bpmnElement="P1_start"><dc:Bounds x="124" y="42" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_report_di" bpmnElement="P1_report"><dc:Bounds x="228" y="20" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_confirm_di" bpmnElement="P1_confirm"><dc:Bounds x="372" y="140" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_timer_di" bpmnElement="P1_timer"><dc:Bounds x="384" y="202" width="36" height="36"/><bpmndi:BPMNLabel><dc:Bounds x="292" y="204" width="88" height="30"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_review_di" bpmnElement="P1_review"><dc:Bounds x="518" y="260" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_verify_di" bpmnElement="P1_verify"><dc:Bounds x="662" y="425" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_matches_di" bpmnElement="P1_matches" isMarkerVisible="true"><dc:Bounds x="842" y="440" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="808" y="408" width="120" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_correct_di" bpmnElement="P1_correct"><dc:Bounds x="952" y="482" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_approve_di" bpmnElement="P1_approve"><dc:Bounds x="1098" y="425" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_final_di" bpmnElement="P1_final"><dc:Bounds x="1284" y="447" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_changed_di" bpmnElement="P1_changed"><dc:Bounds x="560" y="707" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_status_di" bpmnElement="P1_status" isMarkerVisible="true"><dc:Bounds x="698" y="700" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="610" y="674" width="84" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_prov_di" bpmnElement="P1_prov"><dc:Bounds x="808" y="628" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_showfinal_di" bpmnElement="P1_showfinal"><dc:Bounds x="808" y="742" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_refresh_di" bpmnElement="P1_refresh"><dc:Bounds x="952" y="685" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_approved_di" bpmnElement="P1_approved" isMarkerVisible="true"><dc:Bounds x="1132" y="700" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_notify_di" bpmnElement="P1_notify"><dc:Bounds x="1242" y="685" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_waiting_di" bpmnElement="P1_waiting"><dc:Bounds x="1430" y="622" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P1_done_di" bpmnElement="P1_done"><dc:Bounds x="1430" y="707" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_P1_0_di" bpmnElement="Flow_P1_0"><di:waypoint x="160" y="60"/><di:waypoint x="228" y="60"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_1_di" bpmnElement="Flow_P1_1"><di:waypoint x="348" y="60"/><di:waypoint x="360" y="60"/><di:waypoint x="360" y="180"/><di:waypoint x="372" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_2_di" bpmnElement="Flow_P1_2"><di:waypoint x="492" y="180"/><di:waypoint x="505" y="180"/><di:waypoint x="505" y="300"/><di:waypoint x="518" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_3_di" bpmnElement="Flow_P1_3"><di:waypoint x="402" y="238"/><di:waypoint x="402" y="300"/><di:waypoint x="518" y="300"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_4_di" bpmnElement="Flow_P1_4"><di:waypoint x="638" y="300"/><di:waypoint x="650" y="300"/><di:waypoint x="650" y="465"/><di:waypoint x="662" y="465"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_5_di" bpmnElement="Flow_P1_5"><di:waypoint x="782" y="465"/><di:waypoint x="842" y="465"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_6_di" bpmnElement="Flow_P1_6"><di:waypoint x="892" y="465"/><di:waypoint x="1098" y="465"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_7_di" bpmnElement="Flow_P1_7"><di:waypoint x="868" y="490"/><di:waypoint x="868" y="522"/><di:waypoint x="952" y="522"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_8_di" bpmnElement="Flow_P1_8"><di:waypoint x="1072" y="522"/><di:waypoint x="1085" y="522"/><di:waypoint x="1085" y="465"/><di:waypoint x="1098" y="465"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_9_di" bpmnElement="Flow_P1_9"><di:waypoint x="1218" y="465"/><di:waypoint x="1284" y="465"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_10_di" bpmnElement="Flow_P1_10"><di:waypoint x="596" y="725"/><di:waypoint x="698" y="725"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_11_di" bpmnElement="Flow_P1_11"><di:waypoint x="722" y="700"/><di:waypoint x="722" y="668"/><di:waypoint x="808" y="668"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_12_di" bpmnElement="Flow_P1_12"><di:waypoint x="722" y="750"/><di:waypoint x="722" y="782"/><di:waypoint x="808" y="782"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_13_di" bpmnElement="Flow_P1_13"><di:waypoint x="928" y="668"/><di:waypoint x="940" y="668"/><di:waypoint x="940" y="725"/><di:waypoint x="952" y="725"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_14_di" bpmnElement="Flow_P1_14"><di:waypoint x="928" y="782"/><di:waypoint x="940" y="782"/><di:waypoint x="940" y="725"/><di:waypoint x="952" y="725"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_15_di" bpmnElement="Flow_P1_15"><di:waypoint x="1072" y="725"/><di:waypoint x="1132" y="725"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_16_di" bpmnElement="Flow_P1_16"><di:waypoint x="1158" y="700"/><di:waypoint x="1158" y="640"/><di:waypoint x="1430" y="640"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_17_di" bpmnElement="Flow_P1_17"><di:waypoint x="1182" y="725"/><di:waypoint x="1242" y="725"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_P1_18_di" bpmnElement="Flow_P1_18"><di:waypoint x="1362" y="725"/><di:waypoint x="1430" y="725"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_P1_0_di" bpmnElement="Msg_P1_0"><di:waypoint x="578" y="340"/><di:waypoint x="578" y="707"/><bpmndi:BPMNLabel><dc:Bounds x="584" y="514" width="110" height="20"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_P1_1_di" bpmnElement="Msg_P1_1"><di:waypoint x="1158" y="505"/><di:waypoint x="1158" y="590"/><di:waypoint x="578" y="590"/><di:waypoint x="578" y="707"/><bpmndi:BPMNLabel><dc:Bounds x="818" y="572" width="100" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_P1_2_di" bpmnElement="Msg_P1_2"><di:waypoint x="1302" y="765"/><di:waypoint x="1302" y="880"/><bpmndi:BPMNLabel><dc:Bounds x="1308" y="812" width="110" height="20"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_P1_3_di" bpmnElement="Msg_P1_3"><di:waypoint x="1302" y="940"/><di:waypoint x="1302" y="980"/><bpmndi:BPMNLabel><dc:Bounds x="1308" y="950" width="110" height="20"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
