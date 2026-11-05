@@ -2,7 +2,8 @@
 """Compile a workshop folder (numbered .md sections) into a single PDF.
 
 Markdown and Mermaid diagrams are rendered in headless Chrome (marked + mermaid
-from jsDelivr), then printed to PDF.
+from jsDelivr), then printed to PDF. A diagram opts into orthogonal routing with
+`layout: elk` in its Mermaid front matter (the class and table diagrams do).
 
 Usage:
   python3 tools/build_workshop_pdf.py Workshop-2                      # every section -> Workshop-2.pdf
@@ -16,12 +17,13 @@ import subprocess
 import sys
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+REPO_URL = "https://github.com/hmragencia/ingesoft2-tournament-platform"
 
 COVER = {
     "Workshop-2": {
         "title": "Workshop No. 2 — Design Artifacts and System Modeling",
         "subtitle": "Public Module of the youth football tournament platform: public website, widgets and PWA",
-        "date": "October 15, 2026",
+        "date": "October 15, 2026 · Revised after lecturer feedback, November 2026",
     },
     "Workshop-2-part-2": {
         "title": "Workshop No. 2 — Design Artifacts and System Modeling",
@@ -46,6 +48,7 @@ TEMPLATE = """<!doctype html>
   h1 {{ font-size: 19pt; border-bottom: 2px solid #0B6E4F; padding-bottom: 4px; break-before: page; }}
   h2 {{ font-size: 14pt; color: #0B6E4F; margin-top: 18px; }}
   h3 {{ font-size: 11.5pt; margin: 14px 0 4px; }}
+  h2, h3, p:has(+ table), p:has(+ .mermaid) {{ break-after: avoid-page; }}
   table {{ border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 9pt; break-inside: auto; }}
   tr {{ break-inside: avoid; }}
   th, td {{ border: 1px solid #bbb; padding: 4px 6px; vertical-align: top; text-align: left; }}
@@ -75,8 +78,10 @@ TEMPLATE = """<!doctype html>
 </section>
 <main id="doc"></main>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
-<script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs';
+  import elkLayouts from 'https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@1.0.2/dist/mermaid-layout-elk.esm.min.mjs';
+  mermaid.registerLayoutLoaders(elkLayouts);
   const sections = {sections};
   const doc = document.getElementById('doc');
   const renderer = new marked.Renderer();
@@ -89,9 +94,23 @@ TEMPLATE = """<!doctype html>
     s.innerHTML = marked.parse(md, {{ renderer }});
     doc.appendChild(s);
   }}
+  // Links to other files of the workshop point to the public repository, so they work from the PDF.
+  const repoBase = {repo_base};
+  if (repoBase) for (const a of doc.querySelectorAll('a[href]')) {{
+    const href = a.getAttribute('href');
+    if (!/^([a-z]+:|#)/i.test(href)) a.setAttribute('href', repoBase + href);
+  }}
   mermaid.initialize({{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose',
-    flowchart: {{ useMaxWidth: true }}, class: {{ useMaxWidth: true }}, er: {{ useMaxWidth: true }} }});
-  mermaid.run({{ querySelector: '.mermaid' }}).then(() => document.title += ' ✓');
+    flowchart: {{ useMaxWidth: true }}, class: {{ useMaxWidth: true, hideEmptyMembersBox: true }}, er: {{ useMaxWidth: true }} }});
+  // Render one at a time and insert the results at the end: diagrams repeat
+  // class names, and ELK looks nodes up in the live DOM.
+  const blocks = [...document.querySelectorAll('.mermaid')];
+  const rendered = [];
+  for (const [i, block] of blocks.entries()) {{
+    rendered.push((await mermaid.render('diagram-' + i, block.textContent)).svg);
+  }}
+  blocks.forEach((block, i) => {{ block.innerHTML = rendered[i]; }});
+  document.title += ' ✓';
 </script>
 </body></html>
 """
@@ -116,6 +135,7 @@ def main() -> None:
         date=meta["date"],
         team="<br>".join(html.escape(t) for t in TEAM),
         sections=json.dumps(sections),
+        repo_base=json.dumps(f"{REPO_URL}/blob/main/{folder.name}/" if folder.name.startswith("Workshop-") else ""),
     )
     html_path = folder / ".build.html"
     html_path.write_text(page, encoding="utf-8")
@@ -123,7 +143,7 @@ def main() -> None:
     subprocess.run(
         [
             CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
-            "--allow-file-access-from-files", "--virtual-time-budget=20000",
+            "--allow-file-access-from-files", "--virtual-time-budget=90000",
             "--run-all-compositor-stages-before-draw",
             f"--print-to-pdf={pdf_path}", html_path.as_uri(),
         ],

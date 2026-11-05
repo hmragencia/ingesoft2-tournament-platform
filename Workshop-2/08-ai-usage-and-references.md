@@ -5,9 +5,11 @@
 - **Claude Code (Anthropic, model Claude Opus 5.5).** It drafted the written sections of this workshop.
   - **Part 1:** system domain, CRC cards, class diagram, relational model and the mockup prompt.
   - **Part 2:** the two BPMN processes and the architecture section. It also wrote the small tools that generate the BPMN files and compile the PDF.
+  - **Revision of part 1 (November 2026):** from a transcript of the lecturer's feedback session, it updated sections 1 to 5 and wrote the tool that generates the class diagram annex.
 
   It worked from the Workshop 1 deliverables (requirements, user stories and story map), the approved project proposal and the documentation of the existing tournament-management platform, so that the design reuses the real tables, views and services. The team reviewed and adjusted every section before submission.
 - **v0 by Vercel.** It generated the clickable prototype used for the mockups, from a template, the reference image sent by the organization and the prompt in [v0-prompt.md](v0-prompt.md).
+- **Whisper (OpenAI, model large-v3-turbo).** It transcribed the recording of the lecturer's feedback session.
 - **bpmn-js (bpmn.io).** Open-source library used to draw the BPMN diagrams from their `.bpmn` sources. It is a rendering tool, not an AI tool.
 
 ## 8.2 References
@@ -35,3 +37,6 @@
 21. Congreso de Colombia. (2012). *Ley Estatutaria 1581 de 2012* (personal data protection).
 22. PCI Security Standards Council. (2022). *Payment Card Industry Data Security Standard v4.0*.
 23. Olarte, L. M., & Sierra, C. A. (2025). *Systems Design* [lecture slides]. Software Engineering II, Universidad Nacional de Colombia.
+24. Eclipse Foundation. (2026). *Eclipse Layout Kernel (ELK)*. https://eclipse.dev/elk/
+25. JGraph. (2026). *diagrams.net (draw.io)*. https://www.diagrams.net/
+26. Radford, A., et al. (2023). *Robust speech recognition via large-scale weak supervision*. International Conference on Machine Learning (ICML).

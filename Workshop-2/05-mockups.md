@@ -60,6 +60,8 @@ The prototype was requested mobile-first and responsive (RNF-07); the captures b
 
 ## 5.9 Book photo or video
 
+Each package on this screen is a `MediaPackage` (`pm_media_packages`), which holds its type and price. Requesting it creates a `MediaBooking` (`pm_media_bookings`) for the chosen match, and the booking stores the price (BR-18). The capture does not show the slots left per matchday (BR-19), a rule added after the prototype.
+
 ![Book photo or video](mockups/11-book-media.png)
 
 ## 5.10 Sponsorship dashboard

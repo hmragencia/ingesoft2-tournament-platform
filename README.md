@@ -24,4 +24,4 @@ The project extends an existing tournament-management platform for youth footbal
 
 ## Tools
 
-`python3 tools/build_workshop_pdf.py Workshop-2` compiles the numbered sections of a workshop into a single PDF; `--sections` and `--out` select a subset (part 2 of Workshop 2). `python3 tools/build_bpmn.py Workshop-2/bpmn` generates the BPMN 2.0 files and their SVG images. Both need Google Chrome: Markdown, Mermaid and BPMN are rendered in the browser.
+`python3 tools/build_workshop_pdf.py Workshop-2` compiles the numbered sections of a workshop into a single PDF; `--sections` and `--out` select a subset (part 2 of Workshop 2). `python3 tools/build_class_annex.py Workshop-2` builds the annex with the complete class diagram (XML and PDF). `python3 tools/build_bpmn.py Workshop-2/bpmn` generates the BPMN 2.0 files and their SVG images. Both need Google Chrome: Markdown, Mermaid and BPMN are rendered in the browser.

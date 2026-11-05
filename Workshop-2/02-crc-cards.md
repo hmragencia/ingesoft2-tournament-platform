@@ -41,10 +41,32 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 
 | Responsibilities | Collaborators |
 |---|---|
-| Know home and away teams, date, time, field and matchday. | Team, Venue/Field |
+| Know home and away teams, date, time, field and matchday. | Team, Field, Matchday |
 | Expose its public status: to be scheduled, scheduled, provisional, final, postponed, walkover. | — |
 | Give the score and the scorers (name and team only). | Goal |
-| Tell whether it can still be booked for photo/video. | MediaBooking |
+| Tell whether it can still be booked for photo/video: scheduled, not played and before the cut-off. | MediaBooking, MediaPackage |
+
+### Matchday *(read-only)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Know its number, name and start and end dates. | Tournament, Category |
+| List the matches played in it. | Match |
+| Be the unit on which the capacity of a photo or video package is set. | MediaAvailability |
+
+### Venue and Field *(read-only)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Know the venue's name and address, and the fields it has. | Tournament |
+| Say where a match is played. They are never booked (BR-17). | Match |
+
+### Document *(read-only)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Know its title, type, publication date and file. | Tournament |
+| Appear only when it is marked as public. | PublicSite |
 
 ### Standing *(read-only, computed view)*
 
@@ -58,7 +80,7 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 
 | Responsibilities | Collaborators |
 |---|---|
-| Register and authenticate a fan (e-mail or Google). | Auth provider |
+| Register and authenticate a fan (e-mail or Google), recording that the holder is an adult (BR-23). | Auth provider |
 | Follow and unfollow teams. | TeamFollow, Team |
 | Keep push subscriptions and notification preferences. | PushSubscription |
 | List the fan's own orders and bookings. | Order, MediaBooking |
@@ -87,6 +109,14 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 | Publish and unpublish; list newest first. | PublicSite |
 | Optionally attach a matchday photo gallery. | GalleryPhoto |
 
+### Sponsor *(owned)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Hold the allied brand's name, logo and contact, within one organization. | Organization |
+| Link the brand to the account of its representative. | SponsorAccount |
+| Give the metrics of its own placements. | SponsorPlacement |
+
 ### SponsorPlacement *(owned)*
 
 | Responsibilities | Collaborators |
@@ -100,8 +130,14 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 
 | Responsibilities | Collaborators |
 |---|---|
-| Hold name, description, photo, price and active flag. | Organization |
-| Manage its variants (size) and their stock. | ProductVariant |
+| Hold the name, description, photo, price and active flag of a store item (merchandise such as a jersey). | Organization |
+| Manage its variants. | ProductVariant |
+
+### ProductVariant *(owned)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Hold the size and stock of a store item (for example, a jersey in size M). It does not apply to photo or video packages. | Product |
 | Refuse to sell more than the available stock. | OrderItem |
 
 ### Order *(owned)*
@@ -116,15 +152,31 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 
 | Responsibilities | Collaborators |
 |---|---|
-| Keep the gateway reference, amount and status of one charge. | Payment gateway |
+| Keep the gateway reference, amount and status of one charge, tied to exactly one order or one booking. | Payment gateway, Order, MediaBooking |
 | Apply the gateway webhook only once (idempotent by gateway reference). | Order, MediaBooking |
 | Confirm the order or booking only when the payment is approved. | Order, MediaBooking |
+
+### MediaPackage *(owned)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Hold a plan the organization offers: name, type (photo or video), price, booking cut-off and active flag. | Organization |
+| Say on which matchdays it is offered and with what capacity. | MediaAvailability |
+
+### MediaAvailability *(owned)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Hold the capacity of one package on one matchday. | MediaPackage, Matchday |
+| Tell how many slots are left. | MediaBooking |
+| Refuse a booking when no slots are left. | MediaBooking |
 
 ### MediaBooking *(owned)*
 
 | Responsibilities | Collaborators |
 |---|---|
-| Book a photo or video package for a scheduled match. | Match, MediaPackage, FanAccount |
+| Book a photo or video package for a scheduled match, as an advance purchase. It does not book a field or a venue. | Match, MediaPackage, FanAccount |
+| Store the price paid and take a slot of the matchday, releasing it if the booking expires unpaid. | MediaPackage, MediaAvailability |
 | Get paid through the gateway. | Payment |
 | Receive the delivery link from the assigned photographer and notify the customer. | PhotographerAssignment, Notification |
 
@@ -133,5 +185,5 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 | Responsibilities | Collaborators |
 |---|---|
 | Hold the club, contact person, categories of interest and target tournament. | Tournament |
-| Be approved or rejected by the organizer, with a reason. | Organizer |
+| Be approved or rejected by the organizer, with a reason. | OrganizerAccount |
 | On approval, hand the club over to the regular registration flow of the management platform. | Management platform |

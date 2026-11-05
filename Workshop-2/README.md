@@ -7,7 +7,7 @@
 
 The workshop was delivered in two parts, as instructed by the lecturer:
 
-- **Part 1** (October 15, 2026): sections 1 to 5, up to the mockups (main screens only).
+- **Part 1** (October 15, 2026; revised in November 2026 after the lecturer's feedback): sections 1 to 5, up to the mockups (main screens only).
 - **Part 2** (October 30, 2026): sections 6 and 7, business processes and architecture.
 
 | Section | File |
@@ -16,6 +16,7 @@ The workshop was delivered in two parts, as instructed by the lecturer:
 | 1. System domain: context, actors, business rules | [01-system-domain.md](01-system-domain.md) |
 | 2. CRC cards | [02-crc-cards.md](02-crc-cards.md) |
 | 3. Class diagram | [03-class-diagram.md](03-class-diagram.md) |
+| Annex: complete class diagram | [PDF on one large page](annex/Workshop-2-class-diagram-annex.pdf) · [editable XML](annex/class-diagram-full.drawio.xml) (opens in [diagrams.net](https://app.diagrams.net/)) |
 | 4. Relational database model | [04-relational-database-model.md](04-relational-database-model.md) |
 | 5. Mockups | [05-mockups.md](05-mockups.md) · images in [mockups/](mockups/) · prompt in [v0-prompt.md](v0-prompt.md) |
 | **Part 2 — single PDF** | [Workshop-2-part-2.pdf](Workshop-2-part-2.pdf) |
@@ -28,8 +29,10 @@ Traceability: every business rule, class, screen, process and architectural deci
 **Regenerating the files:**
 
 ```bash
+python3 tools/build_workshop_pdf.py Workshop-2 --sections 01 02 03 04 05 08 --out Workshop-2.pdf
+python3 tools/build_class_annex.py Workshop-2
 python3 tools/build_bpmn.py Workshop-2/bpmn
 python3 tools/build_workshop_pdf.py Workshop-2 --sections 06 07 08 --out Workshop-2-part-2.pdf
 ```
 
-The first command rebuilds the `.bpmn` and `.svg` files from their `.json` specs; the second compiles the part 2 PDF. Run both from the repository root.
+The first command compiles the part 1 PDF, and the second builds the class diagram annex from section 3. The third rebuilds the `.bpmn` and `.svg` files from their `.json` specs, and the fourth compiles the part 2 PDF. Run them from the repository root.
