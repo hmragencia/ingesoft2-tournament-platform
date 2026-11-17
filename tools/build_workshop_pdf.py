@@ -22,8 +22,8 @@ REPO_URL = "https://github.com/hmragencia/ingesoft2-tournament-platform"
 COVER = {
     "Workshop-2": {
         "title": "Workshop No. 2 — Design Artifacts and System Modeling",
-        "subtitle": "Public Module of the youth football tournament platform: public website, widgets and PWA",
-        "date": "October 15, 2026 · Revised after lecturer feedback, November 2026",
+        "subtitle": "Public Module of the youth football tournament platform: public website, widgets and PWA. Complete document: parts 1 and 2, revised after the lecturer's feedback",
+        "date": "November 17, 2026",
     },
     "Workshop-2-part-2": {
         "title": "Workshop No. 2 — Design Artifacts and System Modeling",
@@ -101,7 +101,7 @@ TEMPLATE = """<!doctype html>
     if (!/^([a-z]+:|#)/i.test(href)) a.setAttribute('href', repoBase + href);
   }}
   mermaid.initialize({{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose',
-    flowchart: {{ useMaxWidth: true }}, class: {{ useMaxWidth: true, hideEmptyMembersBox: true }}, er: {{ useMaxWidth: true }} }});
+    flowchart: {{ useMaxWidth: true, wrappingWidth: 420 }}, class: {{ useMaxWidth: true, hideEmptyMembersBox: true }}, er: {{ useMaxWidth: true }} }});
   // Render one at a time and insert the results at the end: diagrams repeat
   // class names, and ELK looks nodes up in the live DOM.
   const blocks = [...document.querySelectorAll('.mermaid')];

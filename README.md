@@ -12,7 +12,7 @@ The project extends an existing tournament-management platform for youth footbal
 |---|---|---|
 | Project proposal (approved) and Annex A, functionality breakdown | [Proposal/](Proposal/) | Spanish |
 | Workshop 1: requirements, user stories and story map | [Workshop-1/](Workshop-1/README.md) | Spanish |
-| Workshop 2: design artifacts and system modeling (part 1: domain, CRC, classes, database, mockups; part 2: BPMN processes, architecture) | [Workshop-2/](Workshop-2/README.md) | English |
+| Workshop 2: design artifacts and system modeling: domain, CRC, classes, database, mockups, BPMN processes and architecture (one complete PDF) | [Workshop-2/](Workshop-2/README.md) | English |
 
 ## Other course work
 

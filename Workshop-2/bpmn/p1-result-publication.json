@@ -30,7 +30,7 @@
     },
     {
       "id": "pm",
-      "name": "Public Module (this project)",
+      "name": "Public Module (site of the organization)",
       "lanes": [
         {
           "id": "pmsys",

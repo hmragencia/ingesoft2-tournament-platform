@@ -203,6 +203,8 @@ classDiagram
     +sections: SectionFlags
     +publishTournament(t: Tournament) void
     +toggleSection(s: Section, on: Boolean) void
+    +effectiveBrand() Brand
+    +registerDomain() DnsRecords
     +manifest() WebManifest
   }
   class PublishedTournament {
@@ -228,6 +230,7 @@ classDiagram
   class User {
     <<abstract>>
     +id: UUID «PK»
+    +userId: UUID «FK»
     +organizationId: UUID «FK»
     +email: String
     +displayName: String
@@ -427,6 +430,7 @@ classDiagram
   }
   class Payment {
     +id: UUID «PK»
+    +organizationId: UUID «FK»
     +orderId: UUID «FK»
     +bookingId: UUID «FK»
     -gatewayRef: String
@@ -504,6 +508,15 @@ classDiagram
   class PhotographerAccount:::reference {
     <<see 3.2>>
   }
+  class PaymentAccount {
+    +organizationId: UUID «PK, FK»
+    +provider: String
+    +merchantId: String
+    +publicKey: String
+    -secretRef: String
+    +testMode: Boolean
+    +active: Boolean
+  }
   class PaymentGateway {
     <<interface>>
     +createCheckout(p: Payment) URL
@@ -532,6 +545,8 @@ classDiagram
   PreRegistration "0..*" --> "1" Tournament
   OrganizerAccount "0..1" --> "0..*" PreRegistration : reviews
   Payment ..> PaymentGateway : uses
+  Organization "1" *-- "0..1" PaymentAccount
+  PaymentGateway ..> PaymentAccount : keys of the organization
 
   classDef reference fill:#f7f7f7,stroke:#888,stroke-dasharray:5 4
 ```
@@ -546,7 +561,8 @@ classDiagram
 - **Fields are not booked.** `Venue` and `Field` stay in the model because each match must say where it is played (RF-01, HU-31). No class books them (BR-17).
 - **Dependency inversion.** `Payment` depends on the `PaymentGateway` interface, not on a concrete provider, so the gateway can change without touching orders or bookings (SOLID: DIP and OCP).
 - **Single responsibility.** `Notification` only builds and delivers messages; deciding *who* gets them belongs to `TeamFollow`; computing standings stays in the platform's `Standing` view.
-- **Roles by specialization.** `FanAccount`, `OrganizerAccount`, `PhotographerAccount` and `SponsorAccount` specialize `User`. In the database this becomes one `pm_accounts` table linked to the authentication provider (`auth.users`) with a `role` column (see section 4).
+- **Roles by specialization.** `FanAccount`, `OrganizerAccount`, `PhotographerAccount` and `SponsorAccount` specialize `User`. In the database this becomes one `pm_accounts` table with a `role` column (see section 4). Each row is one person's account in **one organization**: `userId` points to the sign-in identity (`auth.users`), so the same person can have accounts in several organizations (BR-25).
+- **Multi-organization (white-label).** Every owned class has an `organizationId` or hangs from a class that has one, exactly like the management platform, where everything hangs from `torneos.id_organizacion`. `PublicSite` takes the brand of `Organization` and only overrides what the public site needs (BR-15), and `PaymentAccount` keeps each organization's money in its own merchant account (BR-24).
 
 ## 3.5 Annex: complete class diagram
 

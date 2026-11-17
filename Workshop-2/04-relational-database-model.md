@@ -140,6 +140,11 @@ classDiagram
     nombre: text
     slug: text «UK»
   }
+  class auth_users {
+    <<Supabase Auth>>
+    id: uuid «PK»
+    email: text «UK»
+  }
   class equipos {
     <<platform>>
     id: uuid «PK»
@@ -162,7 +167,8 @@ classDiagram
   }
   class pm_accounts {
     <<table>>
-    id: uuid «PK» = auth.users.id
+    id: uuid «PK»
+    user_id: uuid «FK» = auth.users.id
     organization_id: uuid «FK»
     role: text
     display_name: text
@@ -198,6 +204,7 @@ classDiagram
   }
 
   pm_accounts "0..*" --> "1" organizaciones : organization_id
+  pm_accounts "0..*" --> "1" auth_users : user_id
   pm_accounts "1" *-- "0..*" pm_team_follows : account_id
   pm_team_follows "0..*" --> "1" equipos : team_id
   pm_accounts "1" *-- "0..*" pm_push_subscriptions : account_id
@@ -326,9 +333,20 @@ classDiagram
     quantity: int
     unit_price_cop: numeric
   }
+  class pm_payment_accounts {
+    <<table>>
+    organization_id: uuid «PK, FK»
+    provider: text
+    merchant_id: text
+    public_key: text
+    secret_ref: uuid
+    test_mode: bool
+    active: bool
+  }
   class pm_payments {
     <<table>>
     id: uuid «PK»
+    organization_id: uuid «FK»
     order_id: uuid «FK»
     booking_id: uuid «FK»
     gateway_ref: text «UK»
@@ -345,6 +363,8 @@ classDiagram
   pm_orders "0..*" --> "1" pm_accounts : account_id
   pm_orders "1" *-- "1..*" pm_order_items : order_id
   pm_order_items "0..*" --> "1" pm_product_variants : variant_id
+  pm_payment_accounts "0..1" --> "1" organizaciones : organization_id
+  pm_payments "0..*" --> "1" organizaciones : organization_id
   pm_payments "0..*" --> "0..1" pm_orders : order_id
   pm_payments "0..*" --> "0..1" pm_media_bookings : booking_id
   pm_media_bookings "0..*" --> "1" pm_accounts : account_id
@@ -494,7 +514,7 @@ Notation: **PK** primary key, **FK** foreign key, **UK** unique. Every table als
 
 | Table | Columns | Keys and constraints |
 |---|---|---|
-| `pm_public_sites` | id uuid, organization_id uuid, custom_domain text, logo_url text, primary_color text, secondary_color text, show_news bool, show_gallery bool, show_store bool, show_bookings bool, show_preregistration bool | PK id · FK organization_id → organizaciones(id) · UK organization_id · UK custom_domain |
+| `pm_public_sites` | id uuid, organization_id uuid, custom_domain text, domain_verified_at timestamptz, logo_url text, primary_color text, secondary_color text, show_news bool, show_gallery bool, show_store bool, show_bookings bool, show_preregistration bool | PK id · FK organization_id → organizaciones(id) · UK organization_id · UK custom_domain · `logo_url`, `primary_color` and `secondary_color` are optional overrides: when null, the brand in `organizaciones` applies (BR-15) |
 | `pm_published_tournaments` | site_id uuid, tournament_id uuid, published_at timestamptz | PK (site_id, tournament_id) · FK site_id → pm_public_sites · FK tournament_id → torneos(id) |
 | `pm_news_posts` | id uuid, organization_id uuid, title text, body text, cover_url text, tag text, status text, published_at timestamptz, author_id uuid | PK id · FK organization_id → organizaciones · FK author_id → pm_accounts · CHECK status IN ('draft','published') |
 | `pm_gallery_photos` | id uuid, post_id uuid, matchday_id uuid, image_url text, caption text | PK id · FK post_id → pm_news_posts ON DELETE CASCADE · FK matchday_id → jornadas(id) (nullable) |
@@ -504,7 +524,7 @@ Notation: **PK** primary key, **FK** foreign key, **UK** unique. Every table als
 
 | Table | Columns | Keys and constraints |
 |---|---|---|
-| `pm_accounts` | id uuid, organization_id uuid, role text, display_name text, email text, adult_confirmed_at timestamptz | PK id (= auth.users.id) · FK organization_id → organizaciones · CHECK role IN ('fan','organizer','photographer','sponsor') · UK (organization_id, email) · CHECK adult_confirmed_at IS NOT NULL when role = 'fan' (BR-23) |
+| `pm_accounts` | id uuid, user_id uuid, organization_id uuid, role text, display_name text, email text, adult_confirmed_at timestamptz | PK id · FK user_id → auth.users · FK organization_id → organizaciones · UK (user_id, organization_id, role) (BR-25) · CHECK role IN ('fan','organizer','photographer','sponsor') · UK (organization_id, email) · CHECK adult_confirmed_at IS NOT NULL when role = 'fan' (BR-23) |
 | `pm_team_follows` | account_id uuid, team_id uuid | PK (account_id, team_id) · FK account_id → pm_accounts ON DELETE CASCADE · FK team_id → equipos(id) |
 | `pm_push_subscriptions` | id uuid, account_id uuid, endpoint text, p256dh text, auth text, active bool, last_ok_at timestamptz | PK id · FK account_id → pm_accounts ON DELETE CASCADE · UK endpoint |
 | `pm_notifications` | id uuid, account_id uuid, match_id uuid, type text, title text, body text, url text, push_sent_at timestamptz, read_at timestamptz | PK id · FK account_id → pm_accounts · FK match_id → partidos(id) (nullable) · CHECK type IN ('schedule_published','result_approved','delivery_ready','match_rescheduled') |
@@ -525,7 +545,8 @@ Notation: **PK** primary key, **FK** foreign key, **UK** unique. Every table als
 | `pm_product_variants` | id uuid, product_id uuid, size text, stock int | PK id · FK product_id → pm_products ON DELETE CASCADE · UK (product_id, size) · CHECK stock >= 0 (BR-11) |
 | `pm_orders` | id uuid, organization_id uuid, account_id uuid, number text, status text, total_cop numeric(12,0) | PK id · FK organization_id → organizaciones · FK account_id → pm_accounts · UK number · CHECK status IN ('pending','paid','ready','delivered','cancelled') |
 | `pm_order_items` | order_id uuid, variant_id uuid, quantity int, unit_price_cop numeric(12,0) | PK (order_id, variant_id) · FK order_id → pm_orders ON DELETE CASCADE · FK variant_id → pm_product_variants · CHECK quantity > 0 |
-| `pm_payments` | id uuid, order_id uuid, booking_id uuid, gateway_ref text, amount_cop numeric(12,0), status text, raw_event jsonb, confirmed_at timestamptz | PK id · FK order_id → pm_orders · FK booking_id → pm_media_bookings · **UK gateway_ref** (idempotent webhook, BR-10) · CHECK exactly one of order_id / booking_id is not null (BR-21) · CHECK status IN ('pending','approved','rejected') |
+| `pm_payment_accounts` | organization_id uuid, provider text, merchant_id text, public_key text, secret_ref uuid, test_mode bool, active bool | PK organization_id · FK organization_id → organizaciones · CHECK provider IN ('epayco') · `secret_ref` points to the secret key stored encrypted in Supabase Vault, readable only by the server (BR-24) |
+| `pm_payments` | id uuid, organization_id uuid, order_id uuid, booking_id uuid, gateway_ref text, amount_cop numeric(12,0), status text, raw_event jsonb, confirmed_at timestamptz | PK id · FK organization_id → organizaciones · FK order_id → pm_orders · FK booking_id → pm_media_bookings · **UK (organization_id, gateway_ref)** (idempotent webhook, BR-10) · CHECK exactly one of order_id / booking_id is not null (BR-21) · CHECK status IN ('pending','approved','rejected') |
 
 ### Photo/video bookings and pre-registrations
 
@@ -539,8 +560,10 @@ Notation: **PK** primary key, **FK** foreign key, **UK** unique. Every table als
 
 ## 4.4 Integrity and security rules in the database
 
-- **RLS on every `pm_` table.** A fan reads and writes only rows where `account_id = auth.uid()`. An organizer reads and writes only rows of organizations where they are a member (the existing `es_miembro_org()` helper). A sponsor reads only their own placements and events. The anonymous role reads only published news, active placements, active products and the `public_*` views.
-- **Idempotent payments.** The `UK gateway_ref` constraint plus `INSERT … ON CONFLICT DO NOTHING` guarantee that repeated webhooks confirm a payment once.
+- **RLS on every `pm_` table.** A fan reads and writes only rows of their own account in that organization (`pm_accounts.user_id = auth.uid()` and the row's organization). An organizer reads and writes only rows of organizations where they are a member (the existing `es_miembro_org()` helper). A sponsor reads only their own placements and events. The anonymous role reads only published news, active placements, active products and the `public_*` views.
+- **Multi-organization (white-label).** Every policy is scoped to one organization, as in the management platform: the row's `organization_id`, or its parent's, must be an organization where the user has an account or a membership. The organization resolved from the domain only chooses what the site shows; it never grants access. The anonymous role reads public data of any organization, and the site filters it by the organization of the domain.
+- **One identity, one account per organization.** `pm_accounts` has `UK (user_id, organization_id, role)`, so a person who follows teams in two leagues has two accounts with the same sign-in, and neither league sees the other's data (BR-25).
+- **Idempotent payments.** The `UK (organization_id, gateway_ref)` constraint plus `INSERT … ON CONFLICT DO NOTHING` guarantee that repeated webhooks confirm a payment once.
 - **Stock.** It is decremented in the same transaction that marks the payment as approved; `CHECK stock >= 0` aborts overselling.
 - **Capacity per matchday.** The trigger on `pm_media_bookings` locks the matching row of `pm_media_availability` (`SELECT … FOR UPDATE`) and counts the paid bookings and the pending ones that have not expired, so two fans cannot take the last slot at the same time (BR-19). A pending booking stops counting when `expires_at` passes, and a scheduled job then marks it as cancelled (BR-20).
 - **No personal data in public views.** The views select explicit columns (never `*`) and run with `security_invoker` to keep the platform's RLS in force.

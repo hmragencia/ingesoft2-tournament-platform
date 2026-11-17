@@ -4,6 +4,8 @@ Two business processes are documented in **BPMN 2.0**. P1 is the core process of
 
 **Notation used:** pools are participants and lanes are roles inside a participant. Solid arrows are sequence flows inside one participant; dashed arrows are messages between participants. Diamonds with an X are exclusive gateways (one branch only). The clock on a task is a timer boundary event, and envelopes are message events. A collapsed pool (a plain bar) is an external participant whose internal process is not modeled.
 
+**Organization context.** Both processes run inside **one organization** (white-label): the site, the accounts, the notifications and, in P2, the payment account are those of the organization whose domain the fan is using. The same diagrams apply unchanged to every organization (BR-15, BR-24).
+
 ## 6.1 P1 — Publish an approved result and notify followers *(core process)*
 
 <div class="landscape">
@@ -36,7 +38,7 @@ Each status change reaches the Public Module as a message (*Result status change
 
 </div>
 
-**Description.** A registered fan chooses a package (photo pack or video highlights) and a scheduled match, and requests the booking. The Public Module checks that the match is scheduled and that the booking cut-off has not passed. It then creates a **pending** booking and sends the fan to the payment gateway's checkout. The gateway reports the outcome through a **signed webhook**:
+**Description.** A registered fan chooses a package (photo pack or video highlights) and a scheduled match, and requests the booking. The Public Module checks that the match is scheduled, that the booking cut-off has not passed and that the matchday still has slots for that package. It then creates a **pending** booking and sends the fan to the checkout of **the organization's own merchant account** in the payment gateway. The gateway reports the outcome through a **signed webhook**:
 
 - **Rejected payment:** the booking is cancelled.
 - **Approved payment:** the booking is confirmed **once per gateway reference**, even if the webhook arrives several times, and the organizer receives it.
@@ -48,7 +50,7 @@ The organizer assigns a photographer to the match; one photographer covers all t
 | Trigger | A fan wants photos or a video of a match. |
 | Participants | Fan; Public Module; payment gateway (ePayco); organization (organizer and photographer). |
 | Outcome | The fan receives a private link to the material, and the organization collects the payment. |
-| Business rules applied | BR-10 (confirmed only when the payment is approved, idempotent webhook, no card data), BR-12 (scheduled match, before the cut-off, photographer per match), BR-13 (link visible only to the paying customer, notified by e-mail and push). |
+| Business rules applied | BR-10 (confirmed only when the payment is approved, idempotent webhook, no card data), BR-19 (capacity per matchday), BR-24 (the organization's own merchant account), BR-12 (scheduled match, before the cut-off, photographer per match), BR-13 (link visible only to the paying customer, notified by e-mail and push). |
 | Requirements | RF-25, RF-26, RF-27; HU-16, HU-17, HU-29, HU-31, HU-32; RNF-05 (each account sees only its own data), RNF-06 (PCI DSS gateway). |
 | Role in the application | It is one of the **revenue sources** of the commercial release (R4) and the template for the store checkout (RF-23), which follows the same pending → paid → delivered pattern with the same idempotent payment confirmation. |
 

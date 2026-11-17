@@ -6,6 +6,7 @@
   - **Part 1:** system domain, CRC cards, class diagram, relational model and the mockup prompt.
   - **Part 2:** the two BPMN processes and the architecture section. It also wrote the small tools that generate the BPMN files and compile the PDF.
   - **Revision of part 1 (November 2026):** from a transcript of the lecturer's feedback session, it updated sections 1 to 5 and wrote the tool that generates the class diagram annex.
+  - **Unified document (November 2026):** it stated the architectural style explicitly, as the lecturer asked, moved the infrastructure to Cloudflare and Supabase following the management platform's own migration study, and checked every section for multi-organization (white-label) support, adding the rules, tables and design notes that were missing.
 
   It worked from the Workshop 1 deliverables (requirements, user stories and story map), the approved project proposal and the documentation of the existing tournament-management platform, so that the design reuses the real tables, views and services. The team reviewed and adjusted every section before submission.
 - **v0 by Vercel.** It generated the clickable prototype used for the mockups, from a template, the reference image sent by the organization and the prompt in [v0-prompt.md](v0-prompt.md).
@@ -27,7 +28,7 @@
 11. Richards, M. (2015). *Software Architecture Patterns*. O'Reilly Media.
 12. Cockburn, A. (2005). *Hexagonal architecture (ports and adapters)*. https://alistair.cockburn.us/hexagonal-architecture/
 13. Vercel. (2026). *Next.js documentation: caching and revalidating (Incremental Static Regeneration)*. https://nextjs.org/docs
-14. Vercel. (2026). *Cron Jobs*. https://vercel.com/docs/cron-jobs
+14. Cloudflare. (2026). *Cron Triggers*. https://developers.cloudflare.com/workers/configuration/cron-triggers/
 15. PostgreSQL Global Development Group. (2026). *Row Security Policies*. https://www.postgresql.org/docs/current/ddl-rowsecurity.html
 16. Supabase. (2026). *Row Level Security* and *Database Webhooks*. https://supabase.com/docs
 17. Thomson, M., & Beverloo, P. (2017). *Voluntary Application Server Identification (VAPID) for Web Push* (RFC 8292). IETF.
@@ -40,3 +41,8 @@
 24. Eclipse Foundation. (2026). *Eclipse Layout Kernel (ELK)*. https://eclipse.dev/elk/
 25. JGraph. (2026). *diagrams.net (draw.io)*. https://www.diagrams.net/
 26. Radford, A., et al. (2023). *Robust speech recognition via large-scale weak supervision*. International Conference on Machine Learning (ICML).
+27. OpenNext. (2026). *Cloudflare adapter for Next.js (caching with R2, D1 and Durable Objects)*. https://opennext.js.org/cloudflare
+28. Cloudflare. (2026). *Workers documentation (placement, limits, `nodejs_compat`)*. https://developers.cloudflare.com/workers/
+29. Cloudflare. (2026). *Cloudflare for SaaS: custom hostnames*. https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/
+30. Supabase. (2026). *Vault: encrypted secrets in Postgres*. https://supabase.com/docs/guides/database/vault
+31. Molano Barón, N. (2026). *Hosting en Cloudflare, base en Supabase* and *Multi-organización en Cloudflare* [internal technical studies of the tournament-management platform].

@@ -2,7 +2,7 @@
 
 The mockups cover only the **main screens** of the Public Module. They were built as a clickable high-fidelity prototype in **v0 by Vercel**. The prototype started from a v0 template and used the reference image sent by the pilot organization (DBS Complejo Deportivo) as the visual guide. The exact prompt is in [v0-prompt.md](v0-prompt.md).
 
-The prototype was requested mobile-first and responsive (RNF-07); the captures below were taken at desktop width. All the data shown is fictional (teams, players, scores and metrics); no real player data is used (BR-06).
+The prototype was requested mobile-first and responsive (RNF-07); the captures below were taken at desktop width. All the data shown is fictional (teams, players, scores and metrics); no real player data is used (BR-06). The captures show the DBS organization: every organization gets the same screens under its own domain, with its own brand and content (BR-15).
 
 | # | Screen | Purpose | Requirements covered |
 |---|---|---|---|

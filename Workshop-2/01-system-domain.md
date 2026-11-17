@@ -8,6 +8,8 @@ The project extends an existing **tournament-management platform** for youth foo
 
 This semester the team builds the **Public Module**: the tournament's public website, embeddable widgets and installable app (PWA), plus its commercial features. The Public Module **does not manage the tournament**. It **reads** what the management platform has already approved and published, and it **owns** a new set of data: fan accounts, followed teams, news and galleries, sponsors, the store, photo/video bookings and team pre-registrations.
 
+**Multi-organization and white-label.** Like the management platform, the Public Module serves **many organizations from one deployment and one database**. Each organization (DBS today, other leagues later) gets its own public site under its own domain, with its own brand, content, accounts, sponsors, store and payment account. Nothing in the code is specific to one organization: a new league is enabled by configuration (BR-15, BR-24, BR-25, RNF-11).
+
 ```mermaid
 flowchart LR
   V([Visitor]) --> PM
@@ -49,33 +51,36 @@ The Public Module **does not book fields or venues**. Its only bookings are phot
 | **Organizer** | Primary | Staff of the organization (e.g., DBS) who administers the public site and already uses the management platform. | Adult (18+). | Bogotá. | Brand the public site, choose what is published, post news and galleries, generate widgets, manage sponsors, products, orders, packages, bookings and pre-registrations. |
 | **Photographer / videographer** | Primary | Contractor of the organization who fulfills the photo and video bookings. | Adult (18+). | DBS venues in Bogotá. | See the matches assigned to them and upload the delivery link of each booking. |
 | **Sponsor** | Primary | Allied brand that pays for advertising on the site, app and matchday graphics. It uses the system through a representative. | Representative: adult (18+). | Bogotá (assumption). | Check and download the metrics of their own placements. |
+| **Platform administrator** | Primary | Operator of the platform (HMR). Does not belong to any organization. | Adult (18+). | Bogotá (remote). | Enable a new organization without code changes: create its public site, register its domain and link its payment account. |
 
 **System actors**
 
 | Actor | Type | Description | Role in the Public Module | Access |
 |---|---|---|---|---|
 | **Tournament-management platform** | Secondary | Existing system and single source of truth of the competition. | Publishes approved schedule, results, standings and documents through `public_*` views. | Database views; anon role only sees tournaments marked `public`. |
-| **Payment gateway** | Secondary | PCI DSS certified provider (e.g., ePayco, already integrated in the platform). | Charge store orders and bookings; confirm through a webhook. | Server-to-server, signed webhook. |
+| **Payment gateway** | Secondary | PCI DSS certified provider (e.g., ePayco, already integrated in the platform). Each organization uses **its own merchant account** (BR-24). | Charge store orders and bookings; confirm through a webhook. | Server-to-server, signed webhook verified with the organization's keys. |
+| **Hosting platform (Cloudflare)** | Secondary | Edge network that runs the site and issues a TLS certificate for each organization's domain (Cloudflare for SaaS). | Register and serve the custom domain of each organization. | API token, server side. |
 | **Push service** | Secondary | Browser push services (FCM, Apple Push, Mozilla). | Deliver notifications to fans' devices. | Web Push with VAPID keys. |
 | **E-mail service** | Secondary | Transactional e-mail provider. | Order confirmations and delivery links. | API key, server side. |
 
-**Permissions by actor.** Legend: **R** read; **Yes** allowed; **Own** only their own data; **Org** everything in their organization; — no access. The database enforces these permissions through RLS (section 4.4), not only the interface.
+**Permissions by actor.** Legend: **R** read; **Yes** allowed; **Own** only their own data; **Org** everything in their organization; **All** every organization; — no access. The database enforces these permissions through RLS (section 4.4), not only the interface.
 
-| Capability | Visitor | Registered fan | Organizer | Photographer / videographer | Sponsor |
-|---|---|---|---|---|---|
-| Read schedule, results, standings, teams, clubs, news, venues and public documents | R | R | R | R | R |
-| Follow teams and receive notifications | — | Own | — | — | — |
-| Buy in the store and book photo/video packages | — | Own | — | — | — |
-| See orders and bookings | — | Own | Org | Own (assigned matches) | — |
-| Download the delivery link of a booking | — | Own (paid booking) | — | — | — |
-| Upload the delivery link of a booking | — | — | — | Own (assigned matches) | — |
-| Brand the site, choose what is published, post news and galleries, generate widgets | — | — | Org | — | — |
-| Manage products, packages, capacity per matchday and photographer assignments | — | — | Org | — | — |
-| Manage sponsors and their placements | — | — | Org | — | — |
-| See placement metrics | — | — | Org | — | Own |
-| Send a team pre-registration | Yes (public form) | Yes (public form) | — | — | — |
-| Approve or reject pre-registrations | — | — | Org | — | — |
-| Delegate and referee panels, and players' personal data | — | — | — | — | — |
+| Capability | Visitor | Registered fan | Organizer | Photographer / videographer | Sponsor | Platform administrator |
+|---|---|---|---|---|---|---|
+| Read schedule, results, standings, teams, clubs, news, venues and public documents | R | R | R | R | R | All |
+| Follow teams and receive notifications | — | Own | — | — | — | All |
+| Buy in the store and book photo/video packages | — | Own | — | — | — | All |
+| See orders and bookings | — | Own | Org | Own (assigned matches) | — | All |
+| Download the delivery link of a booking | — | Own (paid booking) | — | — | — | All |
+| Upload the delivery link of a booking | — | — | — | Own (assigned matches) | — | All |
+| Brand the site, choose what is published, post news and galleries, generate widgets | — | — | Org | — | — | All |
+| Manage products, packages, capacity per matchday and photographer assignments | — | — | Org | — | — | All |
+| Manage sponsors and their placements | — | — | Org | — | — | All |
+| See placement metrics | — | — | Org | — | Own | All |
+| Send a team pre-registration | Yes (public form) | Yes (public form) | — | — | — | All |
+| Approve or reject pre-registrations | — | — | Org | — | — | All |
+| Enable an organization: public site, custom domain and payment account | — | — | — | — | — | Yes |
+| Delegate and referee panels, and players' personal data | — | — | — | — | — | — |
 
 ## 1.3 Business rules
 
@@ -97,7 +102,7 @@ Each rule states its source requirement and the classes (section 3) and tables o
 | BR-12 | A photo/video booking is allowed only for a **scheduled** match and only up to the booking cut-off, the number of hours before kickoff that the organizer sets for each package. A photographer is assigned per match, not per booking. | RF-25, RF-26 | `Match.isBookable()`, `MediaPackage`, `PhotographerAssignment`; `pm_media_bookings` (trigger), `pm_photographer_assignments` |
 | BR-13 | The customer is notified (e-mail + push) as soon as the photographer uploads the delivery link; the link is visible only to the customer who paid. | RF-27 | `MediaBooking.deliver()`, `Notification`; `pm_media_bookings`, `pm_notifications` |
 | BR-14 | A sponsor placement is shown only between its start and end dates, and sponsors only see the metrics of their own placements. Impressions and clicks are recorded **without personal data** of the visitor. Sponsors pay the organizer directly under their own agreement, outside the platform: no `Payment` is created for a placement. | RF-19, RF-20, RF-21 | `Sponsor`, `SponsorPlacement`, `PlacementEvent`; `pm_sponsors`, `pm_sponsor_placements`, `pm_placement_events` |
-| BR-15 | Each organization has its own brand (logo, colors, domain) and its data never mixes with another organization's (multi-tenant isolation by RLS, not by hostname). | RF-13, RNF-11 | `Organization`, `PublicSite`; `pm_public_sites`, RLS |
+| BR-15 | Each organization has its own public site, domain and brand: name, logo, colors, PWA icon and e-mail sender. By default the brand is the one the organization already has in the management platform; the public site can override it. An organization's data never mixes with another's: isolation is enforced by RLS on membership, never by the hostname. | RF-13, RNF-11 | `Organization`, `PublicSite`; `pm_public_sites`, `organizaciones`, RLS |
 | BR-16 | A pre-registration does not create a team in the tournament; the organizer must approve it, and only then is the club invited to the regular registration flow of the management platform. | RF-28 | `PreRegistration`; `pm_pre_registrations` |
 | BR-17 | A **booking** is the advance purchase of one photo or video package for one match. It never books a field, a venue or a time slot. | RF-25, HU-16 | `MediaBooking`, `MediaPackage`; `pm_media_bookings` |
 | BR-18 | The organizer defines the packages: name, type (photo or video), price, booking cut-off and active flag. A fan can only choose an active package. The booking stores the price at purchase, so a later price change does not affect it. | RF-25, HU-29 | `MediaPackage`, `MediaBooking.unitPrice`; `pm_media_packages`, `pm_media_bookings` |
@@ -106,3 +111,5 @@ Each rule states its source requirement and the classes (section 3) and tables o
 | BR-21 | Each payment belongs to **exactly one** order or one booking, for its full amount. A rejected payment confirms nothing and does not change stock or slots already taken; the customer can retry with a new payment. | RF-23, RNF-06, HU-15 | `Payment`, `Order`, `MediaBooking`; `pm_payments` (CHECK) |
 | BR-22 | A match that was already played or cancelled cannot be booked. If a match with bookings is rescheduled, the bookings follow the new date, and the customers and the photographer are notified. If a booked match will not be played, the organizer refunds the customer outside the platform and the booking is cancelled. | HU-16, HU-29 | `Match.isBookable()`, `MediaBooking`, `Notification`; `pm_media_bookings`, `pm_notifications` |
 | BR-23 | Fan accounts belong to **adults**, normally the player's guardian. A minor player uses the site without an account or through their guardian's account, so the Public Module collects no personal data from minors. | RNF-04, HU-16, Colombian Law 1581 of 2012 | `FanAccount.adultConfirmedAt`; `pm_accounts` |
+| BR-24 | Each organization charges with **its own** payment-gateway merchant account, so the money goes straight to the organization and never through the platform operator. Every payment, order and booking belongs to one organization, and the gateway webhook is verified with that organization's keys. | RF-23, RF-25, RNF-06, RNF-11 | `PaymentAccount`, `Payment`; `pm_payment_accounts`, `pm_payments.organization_id` |
+| BR-25 | One person can hold accounts in several organizations, one per organization and role, with the same e-mail and password. What they do on one organization's site (follows, orders, bookings, notifications) is never visible on another's, and signing in on one organization's domain does not sign them in on the others. | RNF-05, RNF-11 | `User.userId`; `pm_accounts` (UK `user_id, organization_id, role`) |

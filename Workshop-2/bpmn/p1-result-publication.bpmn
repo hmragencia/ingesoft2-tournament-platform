@@ -2,7 +2,7 @@
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_P1" targetNamespace="https://github.com/hmragencia/ingesoft2-tournament-platform">
   <bpmn:collaboration id="Collaboration_P1">
     <bpmn:participant id="Pool_P1_mgmt" name="Tournament-management platform (existing)" processRef="Process_P1_mgmt"/>
-    <bpmn:participant id="Pool_P1_pm" name="Public Module (this project)" processRef="Process_P1_pm"/>
+    <bpmn:participant id="Pool_P1_pm" name="Public Module (site of the organization)" processRef="Process_P1_pm"/>
     <bpmn:participant id="Pool_P1_push" name="Push service (FCM / APNs / Mozilla)"/>
     <bpmn:participant id="Pool_P1_fan" name="Fans following either team"/>
     <bpmn:messageFlow id="Msg_P1_0" name="Under review" sourceRef="P1_review" targetRef="P1_changed"/>

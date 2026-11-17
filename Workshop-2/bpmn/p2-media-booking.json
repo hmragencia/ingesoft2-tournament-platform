@@ -4,7 +4,7 @@
   "pools": [
     {
       "id": "gw",
-      "name": "Payment gateway (ePayco, PCI DSS)",
+      "name": "Payment gateway: the organization's own ePayco account (PCI DSS)",
       "collapsed": true
     },
     {
@@ -20,7 +20,7 @@
     },
     {
       "id": "pm",
-      "name": "Public Module (this project)",
+      "name": "Public Module (site of the organization)",
       "lanes": [
         {
           "id": "pmsys",
@@ -110,7 +110,7 @@
     {
       "id": "check",
       "type": "gateway",
-      "name": "Scheduled match, before cut-off?",
+      "name": "Scheduled, before cut-off and slots left?",
       "lane": "pmsys",
       "col": 3,
       "dy": 25

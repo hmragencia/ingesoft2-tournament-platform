@@ -8,10 +8,11 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 
 | Responsibilities | Collaborators |
 |---|---|
-| Hold the organization's public brand: logo, primary and secondary colors, custom domain. | Organization |
+| Hold the public-site settings of one organization: domain and brand overrides (logo, colors); when an override is empty, use the brand the organization already has in the management platform (BR-15). | Organization |
 | Decide which tournaments are published and which sections are on (news, gallery, store, bookings, pre-registration). | Tournament |
 | Resolve the organization from the request host. | Organization |
-| Provide the PWA manifest (name, icon, colors). | — |
+| Register its custom domain with the hosting platform and show the DNS records the organization must create. | Hosting platform (Cloudflare for SaaS) |
+| Provide the organization's PWA manifest and icons (name, icon, colors). | — |
 
 ### Tournament *(read-only)*
 
@@ -81,6 +82,7 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 | Responsibilities | Collaborators |
 |---|---|
 | Register and authenticate a fan (e-mail or Google), recording that the holder is an adult (BR-23). | Auth provider |
+| Exist once per organization: the same person can have accounts in several organizations, and each one only sees its own data (BR-25). | Organization |
 | Follow and unfollow teams. | TeamFollow, Team |
 | Keep push subscriptions and notification preferences. | PushSubscription |
 | List the fan's own orders and bookings. | Order, MediaBooking |
@@ -155,6 +157,15 @@ One card per main class of the Public Module. Classes marked **read-only** come 
 | Keep the gateway reference, amount and status of one charge, tied to exactly one order or one booking. | Payment gateway, Order, MediaBooking |
 | Apply the gateway webhook only once (idempotent by gateway reference). | Order, MediaBooking |
 | Confirm the order or booking only when the payment is approved. | Order, MediaBooking |
+| Charge with the organization's own merchant account and verify its webhook with that account's keys (BR-24). | PaymentAccount |
+
+### PaymentAccount *(owned)*
+
+| Responsibilities | Collaborators |
+|---|---|
+| Hold the organization's merchant account: provider, merchant id and public key; the secret key only as a reference to an encrypted vault. | Organization |
+| Tell whether the account is active and whether it is in test or live mode. | — |
+| Give the gateway adapter the keys to create checkouts and verify webhooks. | PaymentGateway |
 
 ### MediaPackage *(owned)*
 

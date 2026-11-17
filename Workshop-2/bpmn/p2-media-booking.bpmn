@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_P2" targetNamespace="https://github.com/hmragencia/ingesoft2-tournament-platform">
   <bpmn:collaboration id="Collaboration_P2">
-    <bpmn:participant id="Pool_P2_gw" name="Payment gateway (ePayco, PCI DSS)"/>
+    <bpmn:participant id="Pool_P2_gw" name="Payment gateway: the organization's own ePayco account (PCI DSS)"/>
     <bpmn:participant id="Pool_P2_fan" name="Fan" processRef="Process_P2_fan"/>
-    <bpmn:participant id="Pool_P2_pm" name="Public Module (this project)" processRef="Process_P2_pm"/>
+    <bpmn:participant id="Pool_P2_pm" name="Public Module (site of the organization)" processRef="Process_P2_pm"/>
     <bpmn:participant id="Pool_P2_org" name="Organization" processRef="Process_P2_org"/>
     <bpmn:messageFlow id="Msg_P2_0" name="Booking request" sourceRef="P2_request" targetRef="P2_pstart"/>
     <bpmn:messageFlow id="Msg_P2_1" name="Checkout link" sourceRef="P2_create" targetRef="P2_pay"/>
@@ -57,7 +57,7 @@
       </bpmn:lane>
     </bpmn:laneSet>
     <bpmn:startEvent id="P2_pstart" name="Booking requested"><bpmn:messageEventDefinition/></bpmn:startEvent>
-    <bpmn:exclusiveGateway id="P2_check" name="Scheduled match, before cut-off?"></bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="P2_check" name="Scheduled, before cut-off and slots left?"></bpmn:exclusiveGateway>
     <bpmn:serviceTask id="P2_create" name="Create pending booking and checkout"></bpmn:serviceTask>
     <bpmn:endEvent id="P2_refused" name="Request refused"></bpmn:endEvent>
     <bpmn:intermediateCatchEvent id="P2_webhook" name="Payment webhook received"><bpmn:messageEventDefinition/></bpmn:intermediateCatchEvent>
